@@ -6,7 +6,7 @@ class Sentiment:
 
 
     @staticmethod
-    def find_sentiment(self, text):
+    def find_sentiment(text):
         score = SentimentIntensityAnalyzer().polarity_scores(text)
         if score["compound"] > 0.5:
             sentiment = "positive"
