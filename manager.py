@@ -6,7 +6,7 @@ from processor.sentiment import Sentiment
 
 def load_data_from_csv():
     documents = Loader.load_csv_to_dict(config.TWEETS_PATH)
-    return documents[:10]
+    return documents
 
 
 
@@ -35,6 +35,20 @@ class Process_manager:
             self.es.update_document(config.INDEX_NAME, id, update_info)
 
 
+    def delete_not_dangerous_documents(self):
+        query_to_delete = {
+            "query": {
+                "bool": {
+                    "should": [
+                        {"bool": {"must_not": {"term": {"sentiment": "negative"}}}},
+                        {"bool": {"must_not": {"term": {"Antisemitic": 1}}}}
+                    ]
+                }
+            }
+        }
+        self.es.delete_by_query(self.index, query_to_delete)
+
+
     @staticmethod
     def sentiments_by_id(documents):
         sentiments_by_id = []
@@ -60,8 +74,12 @@ class Process_manager:
         print(f"analysis end. start to send update-documents to elastic")
         self.update_documents_with_sentiment(sentiments, "_id", "sentiment")
 
-        print(f"second pull from elastic - documents with sentiment")
+        print("delete not dangerous documents from elastic")
+        self.delete_not_dangerous_documents()
+
+        print(f"last pull from elastic - documents with sentiment - just dangerous")
         documents = self.es.get_all_documents(config.INDEX_NAME)
+
         return documents
 
 

@@ -90,6 +90,16 @@ class Elastic:
                 print(f"Error during the trial to update document in {index}: {e}")
 
 
+    def delete_by_query(self, index, query):
+        if isinstance(self.es, Elasticsearch):
+            try:
+                results = self.es.delete_by_query(index=index, body=query, refresh=True)
+                print(results)
+            except Exception as e:
+                print(f"Error during the trial to delete documents in {index}: {e}")
+
+
+
 
 if __name__ == "__main__":
     host = '127.0.0.1'
